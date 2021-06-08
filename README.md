@@ -1,1 +1,1 @@
-# Basic SCalculator
+# Basic Calculator
