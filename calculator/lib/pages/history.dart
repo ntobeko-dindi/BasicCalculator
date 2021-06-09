@@ -82,7 +82,7 @@ class _HistoryState extends State<History> {
               ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColours.orange,
+        backgroundColor: AppColours.red,
         child: Icon(Icons.delete_forever),
         onPressed: () {
           clearHistory();
