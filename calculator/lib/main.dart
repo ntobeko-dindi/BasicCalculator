@@ -2,6 +2,7 @@ import 'package:calculator/pages/history.dart';
 import 'package:flutter/material.dart';
 import 'package:calculator/constants/app_colours.dart';
 import 'package:calculator/constants/app_strings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -33,35 +34,15 @@ class _CalculatorState extends State<Calculator> {
         child: Text(
           btnText,
           style: TextStyle(
-            fontSize: 35.0,
+            fontSize: btnText == '=' ? 70.0 : 35.0,
             color: textColour,
           ),
         ),
         color: btnColuor,
-        padding: EdgeInsets.all(20.0),
-        shape: CircleBorder(),
-      ),
-    );
-  }
-
-  Widget equalButton(String btnText, Color btnColuor, Color textColour) {
-    return Container(
-      // ignore: deprecated_member_use
-      child: RaisedButton(
-        onPressed: () {
-          //TODO add function for button press
-        },
-        child: Text(
-          btnText,
-          style: TextStyle(
-            fontSize: 70.0,
-            color: textColour,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        color: btnColuor,
-        padding: EdgeInsets.fromLTRB(71, 0, 71, 0),
-        shape: StadiumBorder(),
+        padding: btnText == '='
+            ? EdgeInsets.fromLTRB(71, 0, 71, 0)
+            : EdgeInsets.all(20.0),
+        shape: btnText == '=' ? StadiumBorder() : CircleBorder(),
       ),
     );
   }
@@ -101,6 +82,22 @@ class _CalculatorState extends State<Calculator> {
               Padding(
                 padding: EdgeInsets.all(10.0),
                 child: Text(
+                  opr,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    color: AppColours.white,
+                    fontSize: 40.0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Text(
                   text,
                   textAlign: TextAlign.left,
                   style: TextStyle(
@@ -115,9 +112,9 @@ class _CalculatorState extends State<Calculator> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               //here button functions will be called where we will pass some arguments
-              calculatorButton("AC", AppColours.grey, AppColours.white),
-              calculatorButton("C", AppColours.grey, AppColours.white),
-              calculatorButton("del", AppColours.grey, AppColours.white),
+              calculatorButton("AC", AppColours.red, AppColours.white),
+              calculatorButton("%", AppColours.red, AppColours.white),
+              calculatorButton("del", AppColours.red, AppColours.white),
               calculatorButton("/", AppColours.orange, AppColours.white),
             ],
           ),
@@ -170,7 +167,7 @@ class _CalculatorState extends State<Calculator> {
               //here button functions will be called where we will pass some arguments
               calculatorButton("0", AppColours.grey, AppColours.white),
               calculatorButton(".", AppColours.grey, AppColours.white),
-              equalButton("=", AppColours.darkerOrage, AppColours.white),
+              calculatorButton("=", AppColours.darkerOrage, AppColours.white),
             ],
           ),
           SizedBox(height: 10.0),
@@ -181,13 +178,19 @@ class _CalculatorState extends State<Calculator> {
 
   //Calculator logic
   dynamic text = '0';
+  dynamic prev = '';
   double numOne = 0;
+  double prevNumOne = 0;
+  bool numOneAdded = false;
   double numTwo = 0;
+  String history = '';
 
   dynamic result = '';
   dynamic finalResult = '';
   dynamic opr = '';
+  bool oprAdded = false;
   dynamic preOpr = '';
+
   void calculation(btnText) {
     if (btnText == 'AC') {
       text = '0';
@@ -196,20 +199,24 @@ class _CalculatorState extends State<Calculator> {
       result = '';
       finalResult = '0';
       opr = '';
+      prev = '';
       preOpr = '';
     } else if (opr == '=' && btnText == '=') {
+      print("\n\n\nhistory is : " + history + '\n\n\n');
+
       if (preOpr == '+') {
         finalResult = add();
       } else if (preOpr == '-') {
         finalResult = sub();
-      } else if (preOpr == 'x') {
+      } else if (preOpr == '×') {
         finalResult = mul();
       } else if (preOpr == '/') {
         finalResult = div();
       }
+      numOne = 0;
     } else if (btnText == '+' ||
         btnText == '-' ||
-        btnText == 'x' ||
+        btnText == '×' ||
         btnText == '/' ||
         btnText == '=') {
       if (numOne == 0) {
@@ -217,16 +224,17 @@ class _CalculatorState extends State<Calculator> {
       } else {
         numTwo = double.parse(result);
       }
-
+      prevNumOne = numOne;
       if (opr == '+') {
         finalResult = add();
       } else if (opr == '-') {
         finalResult = sub();
-      } else if (opr == 'x') {
+      } else if (opr == '×') {
         finalResult = mul();
       } else if (opr == '/') {
         finalResult = div();
       }
+
       preOpr = opr;
       opr = btnText;
       result = '';
@@ -250,7 +258,43 @@ class _CalculatorState extends State<Calculator> {
 
     setState(() {
       text = finalResult;
+      if (numOne > 0.0 && !numOneAdded) {
+        numOneAdded = true;
+        if (isInteger(numOne)) {
+          prev += (numOne.toInt()).toString() + opr;
+        } else {
+          prev += numOne.toString() + opr;
+        }
+      } else {
+        if (opr == '+' && !oprAdded) {
+          oprAdded = true;
+          prev += opr;
+        }
+        if (numTwo > 0.0) {
+          if (isInteger(numTwo)) {
+            prev += (numTwo.toInt()).toString();
+          } else {
+            prev += numTwo.toString();
+          }
+        }
+      }
+      if (numOne != 0.0 && numTwo != 0) {
+        history += '\n' +
+            prevNumOne.toString() +
+            ' ' +
+            preOpr.toString() +
+            ' ' +
+            numTwo.toString() +
+            '\n= ' +
+            finalResult;
+        writeToPrefs();
+      }
     });
+  }
+
+  void writeToPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("history", history);
   }
 
   String add() {
@@ -285,4 +329,8 @@ class _CalculatorState extends State<Calculator> {
     }
     return result;
   }
+
+  //check if a value can be converted to integer
+
+  bool isInteger(num value) => value is int || value == value.roundToDouble();
 }
