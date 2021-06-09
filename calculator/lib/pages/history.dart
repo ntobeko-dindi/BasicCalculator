@@ -13,6 +13,7 @@ class _HistoryState extends State<History> {
   @override
   void initState() {
     getData();
+    super.initState();
   }
 
   void getData() async {

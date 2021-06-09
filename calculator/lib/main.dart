@@ -24,12 +24,33 @@ class Calculator extends StatefulWidget {
 }
 
 class _CalculatorState extends State<Calculator> {
+  String oldHistory = '';
+
+  @override
+  void initState() {
+    getData();
+    super.initState();
+  }
+
+  void getData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      oldHistory = prefs.getString('history');
+      if (oldHistory == null) {
+        oldHistory = '';
+      }
+    });
+  }
+
   Widget calculatorButton(String btnText, Color btnColuor, Color textColour) {
     return Container(
       // ignore: deprecated_member_use
       child: RaisedButton(
         onPressed: () {
-          calculation(btnText);
+          if (btnText != "") {
+            calculation(btnText);
+          }
         },
         child: Text(
           btnText,
@@ -113,8 +134,8 @@ class _CalculatorState extends State<Calculator> {
             children: [
               //here button functions will be called where we will pass some arguments
               calculatorButton("AC", AppColours.red, AppColours.white),
-              calculatorButton("%", AppColours.red, AppColours.white),
-              calculatorButton("del", AppColours.red, AppColours.white),
+              calculatorButton("", AppColours.lightGrey, AppColours.white),
+              calculatorButton("", AppColours.lightGrey, AppColours.white),
               calculatorButton("/", AppColours.orange, AppColours.white),
             ],
           ),
@@ -178,10 +199,8 @@ class _CalculatorState extends State<Calculator> {
 
   //Calculator logic
   dynamic text = '0';
-  dynamic prev = '';
   double numOne = 0;
   double prevNumOne = 0;
-  bool numOneAdded = false;
   double numTwo = 0;
   String history = '';
 
@@ -199,7 +218,6 @@ class _CalculatorState extends State<Calculator> {
       result = '';
       finalResult = '0';
       opr = '';
-      prev = '';
       preOpr = '';
     } else if (opr == '=' && btnText == '=') {
       print("\n\n\nhistory is : " + history + '\n\n\n');
@@ -258,26 +276,6 @@ class _CalculatorState extends State<Calculator> {
 
     setState(() {
       text = finalResult;
-      if (numOne > 0.0 && !numOneAdded) {
-        numOneAdded = true;
-        if (isInteger(numOne)) {
-          prev += (numOne.toInt()).toString() + opr;
-        } else {
-          prev += numOne.toString() + opr;
-        }
-      } else {
-        if (opr == '+' && !oprAdded) {
-          oprAdded = true;
-          prev += opr;
-        }
-        if (numTwo > 0.0) {
-          if (isInteger(numTwo)) {
-            prev += (numTwo.toInt()).toString();
-          } else {
-            prev += numTwo.toString();
-          }
-        }
-      }
       if (numOne != 0.0 && numTwo != 0) {
         history += '\n' +
             prevNumOne.toString() +
@@ -294,7 +292,7 @@ class _CalculatorState extends State<Calculator> {
 
   void writeToPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("history", history);
+    prefs.setString("history", oldHistory + '\n' + history);
   }
 
   String add() {
