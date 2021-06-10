@@ -59,34 +59,39 @@ class _HistoryState extends State<History> {
         ),
         elevation: 0.0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.only(left: 12.0),
-        child: history != null
-            ? Text(
-                '' + history,
-                style: TextStyle(
-                  fontSize: 30.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColours.white,
-                ),
-              )
-            : Center(
-                child: Text(
-                  'no history to display',
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12.0),
+          child: history != null
+              ? Text(
+                  '' + history,
                   style: TextStyle(
-                    color: AppColours.white,
-                    fontSize: 22.0,
-                    fontStyle: FontStyle.italic,
+                    fontSize: 30.0,
                     fontWeight: FontWeight.bold,
+                    color: AppColours.white,
+                  ),
+                )
+              : Center(
+                  child: Text(
+                    'no history to display',
+                    style: TextStyle(
+                      color: AppColours.white,
+                      fontSize: 22.0,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColours.red,
         child: Icon(Icons.delete_forever),
         onPressed: () {
-          clearHistory();
+          setState(() {
+            clearHistory();
+          });
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

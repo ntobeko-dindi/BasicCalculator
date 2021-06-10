@@ -25,6 +25,17 @@ class Calculator extends StatefulWidget {
 
 class _CalculatorState extends State<Calculator> {
   String oldHistory = '';
+  dynamic text = '0';
+  double numOne = 0;
+  double prevNumOne = 0;
+  double numTwo = 0;
+  String history = '';
+
+  dynamic result = '';
+  dynamic finalResult = '';
+  dynamic opr = '';
+  bool oprAdded = false;
+  dynamic preOpr = '';
 
   @override
   void initState() {
@@ -37,9 +48,19 @@ class _CalculatorState extends State<Calculator> {
 
     setState(() {
       oldHistory = prefs.getString('history');
+      numOne =
+          prefs.getDouble('numOne') == null ? 0 : prefs.getDouble('numOne');
+      numTwo =
+          prefs.getDouble('numTwo') == null ? 0 : prefs.getDouble('numTwo');
+      preOpr =
+          prefs.getString('preOpr') == null ? '' : prefs.getString('preOpr');
+      opr = prefs.getString('opr') == null ? '' : prefs.getString('opr');
       if (oldHistory == null) {
         oldHistory = '';
       }
+      text = numOne.toString();
+
+      print('\n\n\nobject : ' + numTwo.toString() + '\n\n\n');
     });
   }
 
@@ -198,19 +219,9 @@ class _CalculatorState extends State<Calculator> {
   }
 
   //Calculator logic
-  dynamic text = '0';
-  double numOne = 0;
-  double prevNumOne = 0;
-  double numTwo = 0;
-  String history = '';
-
-  dynamic result = '';
-  dynamic finalResult = '';
-  dynamic opr = '';
-  bool oprAdded = false;
-  dynamic preOpr = '';
 
   void calculation(btnText) {
+    writeCurrentStateToPrefs();
     if (btnText == 'AC') {
       text = '0';
       numOne = 0;
@@ -220,8 +231,6 @@ class _CalculatorState extends State<Calculator> {
       opr = '';
       preOpr = '';
     } else if (opr == '=' && btnText == '=') {
-      print("\n\n\nhistory is : " + history + '\n\n\n');
-
       if (preOpr == '+') {
         finalResult = add();
       } else if (preOpr == '-') {
@@ -290,9 +299,23 @@ class _CalculatorState extends State<Calculator> {
     });
   }
 
+//write history to shared prefs
   void writeToPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("history", oldHistory + '\n' + history);
+    prefs.setString("history", oldHistory + history);
+  }
+
+//write current state to shared prefs
+
+  void writeCurrentStateToPrefs() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setDouble('numOne', numOne);
+    preferences.setDouble('numTwo', numTwo);
+    preferences.setString('preOpr', preOpr);
+    preferences.setString('opr', opr);
+
+    print('\n\n\nnum one : ' + numOne.toString());
+    print('\n\n\nnum two : ' + numTwo.toString());
   }
 
   String add() {
