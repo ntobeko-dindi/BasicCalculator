@@ -47,15 +47,15 @@ class _CalculatorState extends State<Calculator> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      oldHistory = prefs.getString('history');
+      oldHistory = prefs.getString('history')!;
       numOne =
-          prefs.getDouble('numOne') == null ? 0 : prefs.getDouble('numOne');
+          (prefs.getDouble('numOne') == null ? 0 : prefs.getDouble('numOne'))!;
       numTwo =
-          prefs.getDouble('numTwo') == null ? 0 : prefs.getDouble('numTwo');
+          (prefs.getDouble('numTwo') == null ? 0 : prefs.getDouble('numTwo'))!;
       preOpr =
           prefs.getString('preOpr') == null ? '' : prefs.getString('preOpr');
       opr = prefs.getString('opr') == null ? '' : prefs.getString('opr');
-      if (oldHistory == null) {
+      if (oldHistory == "") {
         oldHistory = '';
       }
       text = numOne.toString();

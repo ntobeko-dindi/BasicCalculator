@@ -20,7 +20,7 @@ class _HistoryState extends State<History> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      history = prefs.getString('history');
+      history = prefs.getString('history')!;
     });
   }
 
@@ -35,6 +35,8 @@ class _HistoryState extends State<History> {
 
   @override
   Widget build(BuildContext context) {
+    var other;
+    var bool = history != other;
     return Scaffold(
       backgroundColor: AppColours.black,
       appBar: AppBar(
@@ -63,7 +65,7 @@ class _HistoryState extends State<History> {
         scrollDirection: Axis.vertical,
         child: Padding(
           padding: const EdgeInsets.only(left: 12.0),
-          child: history != null
+          child: bool
               ? Text(
                   '' + history,
                   style: TextStyle(
